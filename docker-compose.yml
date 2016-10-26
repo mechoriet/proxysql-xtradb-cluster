@@ -12,6 +12,7 @@ services:
       - mynet
     volumes:
       - ./proxysql-data:/opt/proxysql
+      - ./proxysql-galera-checker.sh:/usr/bin/proxysql-galera-checker.sh
     environment:
       - CLUSTER_NAME=cluster
       - MYSQL_ROOT_PASSWORD=moo
