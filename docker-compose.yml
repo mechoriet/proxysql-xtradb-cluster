@@ -1,0 +1,89 @@
+version: '2'
+
+services:
+  proxysql:
+    image: perconalab/proxysql
+    ports:
+      - "6032:6032"
+      - "6033:6033"
+      - "6379:6379"
+      - "3306:3306"
+    networks:
+      - mynet
+    volumes:
+      - ./proxysql-data:/opt/proxysql
+    environment:
+      - CLUSTER_NAME=cluster
+      - MYSQL_ROOT_PASSWORD=moo
+      - MYSQL_PROXY_USER=proxyuser
+      - MYSQL_PROXY_PASSWORD=boo
+      - DISCOVERY_SERVICE=etcd:2379
+      - ETCD_HOST=etcd:2379
+    depends_on:
+      - etcd
+  mysql1:
+    image: percona/percona-xtradb-cluster
+    ports:
+      - "3307:3306"
+    networks:
+      - mynet
+    environment:
+      - CLUSTER_NAME=cluster
+      - MYSQL_ROOT_PASSWORD=moo
+      - ETCD_HOST=etcd:2379
+      - DISCOVERY_SERVICE=etcd:2379
+    depends_on:
+      - etcd
+  mysql2:
+    image: percona/percona-xtradb-cluster
+    ports:
+      - "3308:3306"
+    networks:
+      - mynet
+    environment:
+      - CLUSTER_NAME=cluster
+      - MYSQL_ROOT_PASSWORD=moo
+      - ETCD_HOST=etcd:2379
+      - DISCOVERY_SERVICE=etcd:2379
+    depends_on:
+      - etcd
+    volumes:
+      - ./wait-for-it.sh:/tmp/wait-for-it.sh
+    entrypoint: /bin/bash /tmp/wait-for-it.sh -h mysql1 -p 3306 -t 0 -- /entrypoint.sh
+  mysql3:
+    image: percona/percona-xtradb-cluster
+    ports:
+      - "3309:3306"
+    networks:
+      - mynet
+    environment:
+      - CLUSTER_NAME=cluster
+      - MYSQL_ROOT_PASSWORD=moo
+      - ETCD_HOST=etcd:2379
+      - DISCOVERY_SERVICE=etcd:2379
+    depends_on:
+      - etcd
+    volumes:
+      - ./wait-for-it.sh:/tmp/wait-for-it.sh
+    entrypoint: /bin/bash /tmp/wait-for-it.sh -h mysql1 -p 3306 -t 0 -- /entrypoint.sh
+  etcd:
+    image: quay.io/coreos/etcd
+    networks:
+      - mynet
+    environment:
+      - advertise-client-urls=http://etcd:2379,http://etcd:4001
+      - listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001
+      - initial-advertise-peer-urls=http://etcd:2380
+      - listen-peer-urls=http://0.0.0.0:2380
+      - initial-cluster-token=etcd-cluster-1
+      - initial-cluster='etcd0=http://etcd:2380'
+      - initial-cluster-state=new
+    ports:
+      - "4001:4001"
+      - "2380:2380"
+      - "2379:2379"
+    command: sh -c "timeout -t 2 /usr/local/bin/etcd ;/usr/local/bin/etcd --advertise-client-urls=http://etcd:2379,http://etcd:4001 --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 --initial-advertise-peer-urls=http://etcd:2380 --listen-peer-urls 'http://0.0.0.0:2380' --initial-cluster-token='etcd-cluster-1' --initial-cluster='etcd0=http://etcd:2380' --initial-cluster-state=new"
+
+networks:
+  mynet:
+    driver: bridge
