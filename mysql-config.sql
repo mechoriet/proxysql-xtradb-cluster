@@ -6,4 +6,4 @@ GRANT ALL ON *.* TO 'proxysqlmonitor'@'%';
 CREATE USER 'proxysqlclient'@'%' IDENTIFIED BY 'password';
 GRANT ALL ON *.* TO 'proxysqlclient'@'%';
 
-CREATE DATABASE 'sbtest'
+CREATE DATABASE sbtest;
