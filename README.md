@@ -9,3 +9,5 @@ ProxySQL SQL client port: `3306`
 MySQL-1 port: `3307`
 MySQL-2 port: `3308`
 MySQL-3 port: `3309`
+
+Sample commands for a simple benchmark (mainly useful for testing failover) are contained in `benchmark.md`.
