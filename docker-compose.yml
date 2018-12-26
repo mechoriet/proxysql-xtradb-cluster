@@ -84,11 +84,7 @@ services:
       - "2380:2380"
       - "2379:2379"
     command: sh -c "timeout -t 2 /usr/local/bin/etcd ;/usr/local/bin/etcd --advertise-client-urls=http://etcd:2379,http://etcd:4001 --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 --initial-advertise-peer-urls=http://etcd:2380 --listen-peer-urls 'http://0.0.0.0:2380' --initial-cluster-token='etcd-cluster-1' --initial-cluster='etcd0=http://etcd:2380' --initial-cluster-state=new"
-
 networks:
   mynet:
-    driver: overlay
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.34.0.0/16
+    external:
+      name: bridge
